@@ -358,7 +358,8 @@
         <div class="titleText">
             <p class="title">How does this service work?</p>
             <p class="txt">A simple script fetches the content of your uploaded <span class="bold">.txt</span> file from
-                <em style="font-weight: 500;">catbox.moe</em> and displays it as HTML.</p>
+                <em style="font-weight: 500;">catbox.moe</em> and displays it as HTML.
+            </p>
             <p class="txt">We only support files hosted on <span class="bold">catbox.moe</span> because it’s fast, free,
                 and reliable. Other sources (Mediafire, Google drive, etc...) are not supported.</p>
         </div>
@@ -414,84 +415,89 @@
 </body>
 
 <script>
-  var resultLink;
-  var click = 1;
-  var catbox = "https://files.catbox.moe/";
+    var resultLink;
+    var click = 1;
+    var catbox = "https://files.catbox.moe/";
 
-  function check() {
-    if (click === 1) {
-      result.style.display = "none";
+    function check() {
+        if (click === 1) {
+            result.style.display = "none";
 
-      var url = input.value.trim();
-      var custom = document.getElementById("customId").value.trim();
+            var url = input.value.trim();
+            var custom = document.getElementById("customId").value.trim();
 
-      if (url.startsWith(catbox) && url.endsWith(".txt")) {
-        if (custom === "") {
-          txtErr.style.display = "block";
-          txtErr.textContent = "Please enter a custom ID";
-          return;
+            if (url.startsWith(catbox) && url.endsWith(".txt")) {
+                if (custom === "") {
+                    txtErr.style.display = "block";
+                    txtErr.textContent = "Please enter a custom ID";
+                    return;
+                }
+
+                generate.textContent = "CHECKING...";
+                txtErr.style.display = "none";
+                click = 0;
+
+                fetch(url)
+                    .then(res => res.text())
+                    .then(code => {
+                        // ✅ encode and reverse the custom ID
+                        let id = btoa(unescape(encodeURIComponent(custom)));
+                        id = id.replace(/=+$/, '');
+                        id = id.split("").reverse().join("");
+
+                        resultLink = "https://euuhhphotoss.work.gd/?id=" + id;
+
+                        setTimeout(() => {
+                            result.style.display = "flex";
+                            result.textContent = resultLink;
+                            generate.textContent = "GENERATE";
+                            click = 1;
+                        }, 1500);
+                    })
+                    .catch(error => {
+                        err("Error fetching, please check the file link.");
+                    });
+
+            } else {
+                txtErr.style.display = "block";
+                txtErr.textContent = "Please put a valid file link";
+                generate.textContent = "GENERATE";
+            }
         }
-
-        generate.textContent = "CHECKING...";
-        txtErr.style.display = "none";
-        click = 0;
-
-        fetch(url)
-          .then(res => res.text())
-          .then(code => {
-            // ✅ No encoding, direct link with user-defined ID
-            resultLink = "https://euuhhphotoss.work.gd/?id=" + custom;
-
-            setTimeout(() => {
-              result.style.display = "flex";
-              result.textContent = resultLink;
-              generate.textContent = "GENERATE";
-              click = 1;
-            }, 1500);
-          })
-          .catch(error => {
-            err("Error fetching, please check the file link.");
-          });
-
-      } else {
-        txtErr.style.display = "block";
-        txtErr.textContent = "Please put a valid file link";
-        generate.textContent = "GENERATE";
-      }
     }
-  }
 
-  function fCopy() {
-    try {
-      navigator.clipboard.writeText(resultLink).then(() => {
-        result.textContent = "Copied!";
+
+    function fCopy() {
+        try {
+            navigator.clipboard.writeText(resultLink).then(() => {
+                result.textContent = "Copied!";
+                setTimeout(() => {
+                    result.textContent = resultLink;
+                }, 400);
+            }).catch(err => {
+                window.location.href = resultLink;
+            });
+        } catch {
+            window.location.href = resultLink;
+        }
+    }
+
+    function go(l) {
+        window.open(l);
+    }
+
+    function err(e) {
         setTimeout(() => {
-          result.textContent = resultLink;
-        }, 400);
-      }).catch(err => {
-        window.location.href = resultLink;
-      });
-    } catch {
-      window.location.href = resultLink;
+            txtErr.textContent = e;
+            txtErr.style.display = "block";
+            click = 1;
+            generate.textContent = "GENERATE";
+        }, 1500);
     }
-  }
 
-  function go(l) {
-    window.open(l);
-  }
-
-  function err(e) {
-    setTimeout(() => {
-      txtErr.textContent = e;
-      txtErr.style.display = "block";
-      click = 1;
-      generate.textContent = "GENERATE";
-    }, 1500);
-  }
-
-  input.oninput = () => {
-    txtErr.style.display = "none";
-  }
+    input.oninput = () => {
+        txtErr.style.display = "none";
+    }
 </script>
 
 
